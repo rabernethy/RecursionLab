@@ -1,5 +1,8 @@
 /* sudoku.java, written by Russell Abernethy */
 
+import java.io.*;
+import java.util.*;
+
 public class sudoku {
     public static void main(String[] args) {
         // Sodoku game to be solved:
@@ -19,6 +22,9 @@ public class sudoku {
 
         // Print the sudoku board to the screen.
         print_board(gameBoard);
+
+        // Project Euler - Problem 96
+        eulerProblem96();
     }
 
 // overloaded solve() method
@@ -40,22 +46,27 @@ public class sudoku {
 
                 // Check if the current number can be placed in the spot.
                 if(isValid(gameBoard, position, i)) {
-
                     // Place the number in the spot and try the next spot.
+                    // If it is not possible, put zero back into the current spot.
                     gameBoard[position/gameBoard.length][position%gameBoard[0].length] = i;
                     if(solve(gameBoard, position + 1))
                         return true;
+                    else
+                        gameBoard[position/gameBoard.length][position%gameBoard[0].length] = 0;
                 }
+                
             }
+            // If this point is reached, its backtracking time!
+            return false;
         }
-        // If this point is reached, its backtracking time!
-        gameBoard[position/gameBoard.length][position%gameBoard[0].length] = 0;
-        return false;
+        // If this is reached, there is already a number in the space, so move onto the next space.
+        return solve(gameBoard, position+1);
     }
 
 // isValid() method --- returns T/F if a number can be placed at a given position.
     public static boolean isValid(int gameBoard[][], int position, int n) {
         // If every case is passed, return true, otherwise return false.
+
         return (caseRow(gameBoard, position, n) && caseCol(gameBoard, position, n) && caseBox(gameBoard, position, n));
     }
 
@@ -108,4 +119,56 @@ public class sudoku {
             System.out.println();
         }
     }
+    public static void eulerProblem96() {
+
+        int[][] board = new int[9][9]; // 2d array used to store game state.
+        int sum = 0; // Sum of the top row of the first box in each solved puzzle.
+        int n = 0; // The current line number of the file.
+        try{
+            // Open the file
+            File f = new File("eulerSudoku.txt");
+            Scanner scanner = new Scanner(f);
+
+            
+            while(scanner.hasNextLine()) {
+                String data = scanner.nextLine();
+                
+                // Skip the first line of each sudoku, they have unessicary info?
+                if(n == 0)
+                    n++;
+                // Add the soduku line by line to board.
+                else if(n < 9) {
+                    for(int col = 0; col < 9; col++)
+                        board[n-1][col] = Integer.parseInt(String.valueOf(data.charAt(col)));
+                    n++;
+                }
+                // Special case: add the last line of the soduku then solve it.
+                else {
+                    for(int col = 0; col < 9; col++)
+                        board[n-1][col] = Integer.parseInt(String.valueOf(data.charAt(col)));
+                    
+                    solve(board);
+                    print_board(board);
+                    // Add the top row of the first box to sum.
+                    sum += board[0][0]*100 + board[0][1]*10 + board[0][2];
+                    System.out.println("current sum = " + sum);
+                    n=0;
+                }
+            }
+            System.out.println("The sum of all the sudokus is: " + sum);
+            scanner.close();
+
+        } catch(FileNotFoundException e) {
+            System.out.println("File not found");
+        }
+    }
+
+
+
 }
+    
+        
+
+
+
+
